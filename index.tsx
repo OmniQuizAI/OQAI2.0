@@ -1,3 +1,4 @@
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { GoogleGenAI, Type, Modality } from "@google/genai";
@@ -19,6 +20,7 @@ declare global {
 
     interface Window {
         aistudio?: AIStudio;
+        webkitAudioContext: typeof AudioContext
     }
 }
 
@@ -87,6 +89,9 @@ const translations = {
         correct: 'Correct',
         reviewAnswers: 'Review Your Answers',
         yourAnswer: 'Your Answer',
+        yourScore: 'Your Score',
+        points: 'Points',
+        correctPairings: 'Correct Pairings',
         correctAnswer: 'Correct Answer',
         aiFeedback: 'AI Feedback',
         explanation: 'Explanation',
@@ -102,12 +107,14 @@ const translations = {
         pdfOcrFallback: 'No text found, trying OCR...',
         processingFile: 'Processing file',
         noTextExtracted: 'Could not extract any text from the selected file(s).',
+        adaptingForAudio: 'Adapting questions for audio...',
         // Export
         export: 'Export',
         saveAsPdf: 'Save as PDF',
         generateAudio: 'Generate Audio File (.wav)',
         saveToCode: 'Save Quiz to Code',
         exportToFlashcards: 'Study with Flashcards',
+        exportToConversational: 'Start Conversational Quiz',
         yourQuizCode: 'Your Quiz Code',
         copy: 'Copy',
         copied: 'Copied!',
@@ -131,6 +138,19 @@ const translations = {
         card: 'Card',
         flashcardHint: 'Click card to flip, then choose if you got it right or wrong.',
         goToHomepage: 'Go to Homepage',
+        // Conversation Mode
+        exitConversation: 'Exit Conversation',
+        conversationStatusInitializing: 'Initializing audio...',
+        conversationStatusAsking: 'OmniQuiz is asking a question...',
+        conversationStatusListening: "Listening... Speak your answer and say 'done' when finished.",
+        conversationStatusEvaluating: "Checking your answer...",
+        conversationStatusResponding: 'OmniQuiz is responding...',
+        conversationStatusComplete: 'Conversational quiz complete!',
+        permissionDeniedTitle: 'Microphone Access Denied',
+        permissionDeniedInfo1: 'OmniQuiz needs access to your microphone for the conversational quiz.',
+        permissionDeniedInfo2: "To enable it, please go to your browser's site settings and allow microphone access.",
+        permissionRefreshButton: "I've enabled it, refresh",
+        checkingPermissions: 'Checking microphone permissions...',
     },
     es: {
         // Step 1
@@ -195,6 +215,9 @@ const translations = {
         correct: 'Correctas',
         reviewAnswers: 'Revisa tus Respuestas',
         yourAnswer: 'Tu Respuesta',
+        yourScore: 'Tu Puntuación',
+        points: 'Puntos',
+        correctPairings: 'Pares Correctos',
         correctAnswer: 'Respuesta Correcta',
         aiFeedback: 'Feedback de la IA',
         explanation: 'Explicación',
@@ -210,12 +233,14 @@ const translations = {
         pdfOcrFallback: 'No se encontró texto, intentando OCR...',
         processingFile: 'Procesando archivo',
         noTextExtracted: 'No se pudo extraer texto de los archivos seleccionados.',
+        adaptingForAudio: 'Adaptando preguntas para audio...',
         // Export
         export: 'Exportar',
         saveAsPdf: 'Guardar como PDF',
         generateAudio: 'Generar Archivo de Audio (.wav)',
         saveToCode: 'Guardar Cuestionario en Código',
         exportToFlashcards: 'Estudiar con Tarjetas',
+        exportToConversational: 'Iniciar Cuestionario Conversacional',
         yourQuizCode: 'Tu Código de Cuestionario',
         copy: 'Copiar',
         copied: '¡Copiado!',
@@ -239,6 +264,19 @@ const translations = {
         card: 'Tarjeta',
         flashcardHint: 'Haz clic en la tarjeta para voltearla, luego elige si la tuviste correcta o incorrecta.',
         goToHomepage: 'Ir a la Página Principal',
+        // Conversation Mode
+        exitConversation: 'Salir de Conversación',
+        conversationStatusInitializing: 'Iniciando audio...',
+        conversationStatusAsking: 'OmniQuiz está haciendo una pregunta...',
+        conversationStatusListening: "Escuchando... Di tu respuesta y luego 'listo' al terminar.",
+        conversationStatusEvaluating: "Comprobando tu respuesta...",
+        conversationStatusResponding: 'OmniQuiz está respondiendo...',
+        conversationStatusComplete: '¡Cuestionario conversacional completo!',
+        permissionDeniedTitle: 'Acceso al Micrófono Denegado',
+        permissionDeniedInfo1: 'OmniQuiz necesita acceso a tu micrófono para el cuestionario conversacional.',
+        permissionDeniedInfo2: 'Para habilitarlo, ve a la configuración del sitio en tu navegador y permite el acceso al micrófono.',
+        permissionRefreshButton: 'Lo he habilitado, actualizar',
+        checkingPermissions: 'Comprobando permisos...',
     },
     fr: {
         // Step 1
@@ -303,6 +341,9 @@ const translations = {
         correct: 'Correctes',
         reviewAnswers: 'Révisez vos Réponses',
         yourAnswer: 'Votre Réponse',
+        yourScore: 'Votre Score',
+        points: 'Points',
+        correctPairings: 'Associations Correctes',
         correctAnswer: 'Réponse Correcte',
         aiFeedback: 'Feedback de l\'IA',
         explanation: 'Explication',
@@ -318,12 +359,14 @@ const translations = {
         pdfOcrFallback: 'Aucun texte trouvé, essai de l\'OCR...',
         processingFile: 'Traitement du fichier',
         noTextExtracted: 'Impossible d\'extraire du texte des fichiers sélectionnés.',
+        adaptingForAudio: 'Adaptation des questions pour l\'audio...',
         // Export
         export: 'Exporter',
         saveAsPdf: 'Enregistrer en PDF',
         generateAudio: 'Générer un Fichier Audio (.wav)',
         saveToCode: 'Enregistrer le Quiz en Code',
         exportToFlashcards: 'Étudier avec des Cartes',
+        exportToConversational: 'Démarrer le Quiz Conversationnel',
         yourQuizCode: 'Votre Code de Quiz',
         copy: 'Copier',
         copied: 'Copié !',
@@ -347,6 +390,19 @@ const translations = {
         card: 'Carte',
         flashcardHint: 'Cliquez sur la carte pour la retourner, puis choisissez si vous avez eu raison ou tort.',
         goToHomepage: 'Aller à la Page d\'Accueil',
+        // Conversation Mode
+        exitConversation: 'Quitter la Conversation',
+        conversationStatusInitializing: 'Initialisation de l\'audio...',
+        conversationStatusAsking: 'OmniQuiz pose une question...',
+        conversationStatusListening: "J'écoute... Donnez votre réponse et dites 'terminé' lorsque vous avez fini.",
+        conversationStatusEvaluating: 'Vérification de votre réponse...',
+        conversationStatusResponding: 'OmniQuiz répond...',
+        conversationStatusComplete: 'Quiz conversationnel terminé !',
+        permissionDeniedTitle: 'Accès au Microphone Refusé',
+        permissionDeniedInfo1: "OmniQuiz a besoin d'accéder à votre microphone pour le quiz conversationnel.",
+        permissionDeniedInfo2: "Pour l'activer, rendez-vous dans les paramètres du site de votre navigateur et autorisez l'accès au microphone.",
+        permissionRefreshButton: "Je l'ai activé, rafraîchir",
+        checkingPermissions: 'Vérification des permissions...',
     }
 };
 
@@ -389,7 +445,7 @@ const ThemeToggleButton = ({ theme, toggleTheme }) => (
 
 
 const App = () => {
-    const [step, setStep] = React.useState('input'); // 'input', 'options', 'quiz', 'results', 'flashcards'
+    const [step, setStep] = React.useState('input'); // 'input', 'options', 'quiz', 'results', 'flashcards', 'conversation'
     const [previousStep, setPreviousStep] = React.useState('input');
     const [contextText, setContextText] = React.useState('');
     const [quizOptions, setQuizOptions] = React.useState({
@@ -433,8 +489,13 @@ const App = () => {
         setPreviousStep(step);
         setStep('flashcards');
     };
+    
+    const handleEnterConversationMode = () => {
+        setPreviousStep(step);
+        setStep('conversation');
+    };
 
-    const handleExitFlashcards = () => {
+    const handleExitSecondaryModes = () => {
         setStep(previousStep);
     };
 
@@ -587,6 +648,7 @@ const App = () => {
     };
 
     const renderStep = () => {
+        const isSecondaryMode = step === 'flashcards' || step === 'conversation';
         switch (step) {
             case 'input':
                 return <InputStep onContextReady={handleContextReady} onLoadFromCode={handleLoadFromCode} showLoader={showLoader} hideLoader={hideLoader} t={t} />;
@@ -597,26 +659,31 @@ const App = () => {
             case 'results':
                 return <ResultsStep results={userAnswers} quizData={quizData} onRestart={restartQuiz} onTryAgain={tryAgain} t={t} />;
              case 'flashcards':
-                return <FlashcardStep quizData={quizData} onExit={handleExitFlashcards} showLoader={showLoader} hideLoader={hideLoader} t={t} language={language} />;
+                return <FlashcardStep quizData={quizData} onExit={handleExitSecondaryModes} showLoader={showLoader} hideLoader={hideLoader} t={t} language={language} />;
+            case 'conversation':
+                return <ConversationStep quizData={quizData} onExit={handleExitSecondaryModes} t={t} language={language} contextText={contextText} showLoader={showLoader} hideLoader={hideLoader} />;
             default:
                 return <InputStep onContextReady={handleContextReady} onLoadFromCode={handleLoadFromCode} showLoader={showLoader} hideLoader={hideLoader} t={t} />;
         }
     };
 
+    const isSecondaryMode = step === 'flashcards' || step === 'conversation';
+
     return (
         <>
-            {loadingState.isLoading && <LoadingScreen text={loadingState.text} context={loadingState.context} />}
-            <div className="container" style={{paddingTop: step === 'flashcards' ? '3rem' : '4rem'}}>
+            {loadingState.isLoading && <LoadingScreen text={loadingState.text} context={loadingState.context} language={language} t={t} />}
+            <div className="container" style={{paddingTop: isSecondaryMode ? '3rem' : '4rem', maxWidth: isSecondaryMode ? '800px' : '800px'}}>
                 <header className="app-header-controls">
                     {step !== 'input' && (
                         <button className="home-btn" onClick={restartQuiz} aria-label={t('goToHomepage')}>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                         </button>
                     )}
                     {(step === 'quiz' || step === 'results') && (
                         <ExportDropdown
                             quizData={quizData}
                             onEnterFlashcards={handleEnterFlashcards}
+                            onEnterConversationMode={handleEnterConversationMode}
                             quizOptions={quizOptions}
                             contextText={contextText}
                             showLoader={showLoader}
@@ -634,14 +701,14 @@ const App = () => {
                     </div>
                     <ThemeToggleButton theme={theme} toggleTheme={toggleTheme} />
                 </header>
-                {step !== 'flashcards' && <h1><AppLogo /> OmniQuiz 2.0</h1>}
+                {!isSecondaryMode && <h1><AppLogo /> OmniQuiz 2.0</h1>}
                 {renderStep()}
             </div>
         </>
     );
 };
 
-const LoadingScreen = ({ text, context }) => {
+const LoadingScreen = ({ text, context, language, t }) => {
     const [funFact, setFunFact] = React.useState({ fact: '', emoji: '' });
 
     React.useEffect(() => {
@@ -649,7 +716,10 @@ const LoadingScreen = ({ text, context }) => {
             if (context) {
                 try {
                     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-                    const factPrompt = `Based on the following text, provide a single, short, interesting "fun fact" and a single relevant emoji. The fact must be in English. Return ONLY a JSON object with "fact" and "emoji" keys.
+                     const languageMap = { en: 'English', es: 'Spanish', fr: 'French' };
+                     const targetLanguage = languageMap[language] || 'English';
+
+                    const factPrompt = `Based on the following text, provide a single, short, interesting "fun fact" and a single relevant emoji. The fact MUST be in ${targetLanguage}. Return ONLY a JSON object with "fact" and "emoji" keys.
 
                     Text:
                     ---
@@ -677,7 +747,7 @@ const LoadingScreen = ({ text, context }) => {
             }
         };
         getFunFact();
-    }, [context]);
+    }, [context, language]);
 
     return (
         <div className="loading-screen">
@@ -705,11 +775,8 @@ interface ErrorBoundaryState {
   error: Error | null;
 }
 class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
-    // Fix: Reverted to using a constructor for state initialization. The class property syntax was causing a type inference issue, leading to the "Property 'props' does not exist" error.
-    constructor(props: ErrorBoundaryProps) {
-        super(props);
-        this.state = { hasError: false, error: null };
-    }
+    // Fix: Initialize state using a class property to resolve type errors with `this.state` and `this.props`.
+    state: ErrorBoundaryState = { hasError: false, error: null };
 
     static getDerivedStateFromError(error: Error): ErrorBoundaryState {
         return { hasError: true, error };
@@ -1243,12 +1310,11 @@ const QuizStep = ({ quizData, onComplete, options, contextText, t }) => {
     const [selectedTerm, setSelectedTerm] = React.useState(null);
     const [selectedDef, setSelectedDef] = React.useState(null);
     const [correctPairs, setCorrectPairs] = React.useState([]);
+    const [matchingIncorrectAttempts, setMatchingIncorrectAttempts] = React.useState(0);
+    const [incorrectPair, setIncorrectPair] = React.useState(null);
 
     const currentQuestion = currentQuizData[currentQuestionIndex];
     
-    // FIX: Moved useMemo to the top level of the component to obey the Rules of Hooks.
-    // It was previously inside renderAnswerField, which is not a component or a hook,
-    // and was being called conditionally, causing the "Rendered more hooks" error.
     const shuffledDefs = React.useMemo(() => {
         if (currentQuestion?.type === 'matching' && currentQuestion.matchPairs) {
             return [...currentQuestion.matchPairs.map(p => p.definition)].sort(() => Math.random() - 0.5);
@@ -1268,6 +1334,7 @@ const QuizStep = ({ quizData, onComplete, options, contextText, t }) => {
         }
         setSelectedTerm(null);
         setSelectedDef(null);
+        setMatchingIncorrectAttempts(0);
     }, [currentQuestionIndex, currentQuizData]);
 
     const handleNext = () => {
@@ -1296,10 +1363,7 @@ const QuizStep = ({ quizData, onComplete, options, contextText, t }) => {
                     gradingResult.isCorrect = currentAnswer.toLowerCase().trim() === currentQuestion.answer.toLowerCase().trim();
                     break;
                 case 'matching':
-                     const allCorrect = currentQuestion.matchPairs.every(pair => 
-                        currentAnswer.some(ans => ans.term === pair.term && ans.def === pair.definition)
-                    );
-                    gradingResult.isCorrect = allCorrect;
+                     // This case is now handled by the auto-submit useEffect
                     break;
                 case 'short-answer':
                 case 'long-answer':
@@ -1389,18 +1453,57 @@ const QuizStep = ({ quizData, onComplete, options, contextText, t }) => {
                 setCorrectPairs(prev => [...prev, { term: selectedTerm, def: selectedDef }]);
                 setCurrentAnswer(prev => [...(prev || []), {term: selectedTerm, def: selectedDef}]);
             } else {
-                // Flash incorrect selection
-                setSelectedTerm(prev => ({...prev, incorrect: true}));
-                setSelectedDef(prev => ({...prev, incorrect: true}));
-                setTimeout(() => {
-                    setSelectedTerm(null);
-                    setSelectedDef(null);
-                }, 500);
+                setMatchingIncorrectAttempts(prev => prev + 1);
+                setIncorrectPair({ term: selectedTerm, def: selectedDef });
+                setTimeout(() => setIncorrectPair(null), 500);
             }
             setSelectedTerm(null);
             setSelectedDef(null);
         }
     }, [selectedTerm, selectedDef, currentQuestion]);
+
+    React.useEffect(() => {
+        if (
+            currentQuestion.type === 'matching' &&
+            currentQuestion.matchPairs?.length > 0 &&
+            correctPairs.length === currentQuestion.matchPairs.length &&
+            !isGraded
+        ) {
+            setIsGrading(true);
+    
+            const finalScore = Math.max(0, 5 - matchingIncorrectAttempts);
+            const isFullyCorrect = matchingIncorrectAttempts === 0;
+    
+            const detailedFeedback = `You scored ${finalScore} out of 5 points.${isFullyCorrect ? '' : ` You made ${matchingIncorrectAttempts} incorrect selection(s).`} The correct pairings are shown below:`;
+            
+            const gradingResult = {
+                isCorrect: isFullyCorrect,
+                isPartiallyCorrect: !isFullyCorrect,
+                feedback: detailedFeedback,
+                explanation: detailedFeedback, // for immediate feedback
+                scoreDetails: { score: finalScore, total: 5 }
+            };
+    
+            const originalIndex = quizData.findIndex(q => q.question === currentQuestion.question);
+            const updatedAnswers = [...userAnswers];
+            updatedAnswers[originalIndex].attempts.push({
+                answer: correctPairs,
+                isCorrect: gradingResult.isCorrect,
+                isPartiallyCorrect: gradingResult.isPartiallyCorrect,
+                feedback: gradingResult.feedback,
+                scoreDetails: gradingResult.scoreDetails
+            });
+            setUserAnswers(updatedAnswers);
+    
+            setFeedback(gradingResult);
+            setIsGraded(true);
+            setIsGrading(false);
+    
+            if (options.spacedRepetition && !gradingResult.isCorrect) {
+                setCurrentQuizData(prev => [...prev, currentQuestion]);
+            }
+        }
+    }, [correctPairs, currentQuestion, isGraded, quizData, userAnswers, matchingIncorrectAttempts, options.spacedRepetition]);
 
     const renderAnswerField = () => {
         switch (currentQuestion.type) {
@@ -1453,7 +1556,7 @@ const QuizStep = ({ quizData, onComplete, options, contextText, t }) => {
                                 const isPaired = correctPairs.some(p => p.term === term);
                                 return (
                                 <button key={term}
-                                    className={`match-btn ${selectedTerm === term ? 'selected' : ''} ${isPaired ? 'correct' : ''}`}
+                                    className={`match-btn ${selectedTerm === term ? 'selected' : ''} ${isPaired ? 'correct' : ''} ${incorrectPair && incorrectPair.term === term ? 'incorrect-selection' : ''}`}
                                     onClick={() => !isPaired && handleMatchSelection(term, 'term')}
                                     disabled={isGraded || isPaired}>
                                     {term}
@@ -1466,7 +1569,7 @@ const QuizStep = ({ quizData, onComplete, options, contextText, t }) => {
                                 const isPaired = correctPairs.some(p => p.def === def);
                                 return (
                                 <button key={def}
-                                    className={`match-btn ${selectedDef === def ? 'selected' : ''} ${isPaired ? 'correct' : ''}`}
+                                    className={`match-btn ${selectedDef === def ? 'selected' : ''} ${isPaired ? 'correct' : ''} ${incorrectPair && incorrectPair.def === def ? 'incorrect-selection' : ''}`}
                                     onClick={() => !isPaired && handleMatchSelection(def, 'def')}
                                     disabled={isGraded || isPaired}>
                                     {def}
@@ -1496,8 +1599,23 @@ const QuizStep = ({ quizData, onComplete, options, contextText, t }) => {
             
             {showFeedback && feedback && (
                  <div className={`feedback ${feedback.isCorrect ? 'correct' : feedback.isPartiallyCorrect ? 'partially-correct' : 'incorrect'}`}>
-                    <h4>{feedback.isCorrect ? 'Correct!' : feedback.isPartiallyCorrect ? 'Partially Correct' : 'Incorrect'}</h4>
-                    <p>{feedback.explanation}</p>
+                    <h4>
+                        {currentQuestion.type === 'matching'
+                            ? (feedback.isCorrect ? 'Perfect! 5/5 Points' : `Score: ${feedback.scoreDetails.score}/${feedback.scoreDetails.total} Points`)
+                            : (feedback.isCorrect ? 'Correct!' : feedback.isPartiallyCorrect ? 'Partially Correct' : 'Incorrect')}
+                    </h4>
+                    {currentQuestion.type === 'matching' ? (
+                        <div>
+                            <p>{feedback.explanation.split('The correct pairings are shown below:')[0]}</p>
+                            <div style={{marginTop: '0.5rem', paddingLeft: '1rem', borderLeft: '3px solid var(--border-color)'}}>
+                                {currentQuestion.matchPairs.map((pair, i) => (
+                                    <p key={i} style={{margin: '0.25rem 0'}}>• <strong>{pair.term}:</strong> {pair.definition}</p>
+                                ))}
+                            </div>
+                        </div>
+                    ) : (
+                        <p>{feedback.explanation}</p>
+                    )}
                 </div>
             )}
 
@@ -1516,27 +1634,73 @@ const QuizStep = ({ quizData, onComplete, options, contextText, t }) => {
     );
 };
 
-const AudioModal = ({ onClose, onConfirm, t }) => {
-    const [pause, setPause] = React.useState(10);
-    return (
-        <div className="modal-overlay">
-            <div className="modal-content">
-                <h3>{t('audioExportSettings')}</h3>
-                <div className="input-group">
-                    <label htmlFor="pause-duration">{t('pauseDuration')}: {pause} {t('seconds')}</label>
-                    <input type="range" id="pause-duration" min="1" max="10" value={pause} onChange={(e) => setPause(parseInt(e.target.value, 10))} />
-                </div>
-                <div className="modal-footer">
-                    <button className="btn" onClick={onClose}>{t('cancel')}</button>
-                    <button className="btn btn-primary" onClick={() => onConfirm(pause)}>{t('generateAudio')}</button>
-                </div>
-            </div>
-        </div>
-    );
+const regenerateMatchingQuestionsForAudio = async (originalQuizData, contextText, language, t, showLoader, hideLoader) => {
+    if (!originalQuizData.some(q => q.type === 'matching')) {
+        return originalQuizData;
+    }
+
+    showLoader(t('adaptingForAudio'));
+    try {
+        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+        const languageMap = { en: 'English', es: 'Spanish', fr: 'French' };
+        const targetLanguage = languageMap[language];
+        
+        const newQuestionSchema = {
+            type: Type.OBJECT,
+            properties: {
+                question: { type: Type.STRING },
+                type: { type: Type.STRING, enum: ['multiple-choice', 'true-false', 'short-answer', 'fill-in-the-blank'] },
+                options: { type: Type.ARRAY, items: { type: Type.STRING }, nullable: true },
+                answer: { type: Type.STRING },
+                explanation: { type: Type.STRING },
+                matchPairs: { type: Type.ARRAY, items: { type: Type.STRING }, nullable: true }
+            },
+            required: ['question', 'type', 'answer', 'explanation']
+        };
+
+        const regeneratedPromises = originalQuizData.map(async (q) => {
+            if (q.type !== 'matching') {
+                return q;
+            }
+            
+            const pairsText = q.matchPairs.map(p => `- ${p.term}: ${p.definition}`).join('\n');
+            const prompt = `Based on the provided context text, and focusing on the information from the following term/definition pairs, create ONE new audio-friendly quiz question.
+The new question type MUST be one of: 'multiple-choice', 'true-false', 'short-answer', 'fill-in-the-blank'. DO NOT create a 'matching' or 'long-answer' question.
+The entire output (question, options, answer, explanation) MUST be in ${targetLanguage}.
+
+Term/Definition Pairs:
+${pairsText}
+
+Context Text:
+---
+${contextText.substring(0, 4000)}
+---
+
+Return ONLY a JSON object that strictly follows the provided schema. For 'multiple-choice', provide exactly 4 options.`;
+
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.5-pro',
+                contents: prompt,
+                config: { responseMimeType: 'application/json', responseSchema: newQuestionSchema }
+            });
+
+            return JSON.parse(response.text);
+        });
+
+        const newQuizData = await Promise.all(regeneratedPromises);
+        return newQuizData;
+
+    } catch (error) {
+        console.error("Failed to regenerate matching questions:", error);
+        alert("Could not adapt matching questions for audio. Using original questions.");
+        return originalQuizData; // Fallback to original
+    } finally {
+        hideLoader();
+    }
 };
 
 
-const ExportDropdown = ({ quizData, onEnterFlashcards, quizOptions, contextText, showLoader, hideLoader, t, language }) => {
+const ExportDropdown = ({ quizData, onEnterFlashcards, onEnterConversationMode, quizOptions, contextText, showLoader, hideLoader, t, language }) => {
     const [modal, setModal] = React.useState(null); 
     const [copied, setCopied] = React.useState(false);
 
@@ -1735,26 +1899,28 @@ const ExportDropdown = ({ quizData, onEnterFlashcards, quizOptions, contextText,
         hideLoader();
     };
 
-    const handleGenerateAudio = async (pauseDuration) => {
-        setModal(null);
+    const handleGenerateAudio = async () => {
+        const audioFriendlyQuizData = await regenerateMatchingQuestionsForAudio(quizData, contextText, language, t, showLoader, hideLoader);
+
         const ai = new GoogleGenAI({apiKey: process.env.API_KEY});
         const languageMap = { en: { voice: 'Zephyr' }, es: { voice: 'Puck' }, fr: { voice: 'Charon' } };
         const voiceName = languageMap[language]?.voice || 'Zephyr';
 
         try {
             const audioBuffers = [];
-            const silence = new Uint8Array(24000 * 2 * pauseDuration).fill(0); // 24kHz sample rate, 16-bit
+            const answerSilence = new Uint8Array(24000 * 2 * 10).fill(0); // 10 seconds of silence
             
-            for (let i = 0; i < quizData.length; i++) {
-                const q = quizData[i];
-                showLoader(`${t('generatingAudioFor')} ${i + 1}/${quizData.length}...`);
+            for (let i = 0; i < audioFriendlyQuizData.length; i++) {
+                const q = audioFriendlyQuizData[i];
+                showLoader(`${t('generatingAudioFor')} ${i + 1}/${audioFriendlyQuizData.length}...`);
                 
+                // 1. Generate and add Question Audio
                 let textToSpeak = `Question ${i + 1}. ${q.question}. `;
                  if (q.type === 'multiple-choice' && q.options) {
                     textToSpeak += q.options.map((opt, idx) => `Option ${String.fromCharCode(65 + idx)}: ${opt}.`).join(' ');
                 }
                 
-                const response = await ai.models.generateContent({
+                const questionResponse = await ai.models.generateContent({
                     model: "gemini-2.5-flash-preview-tts",
                     contents: [{ parts: [{ text: textToSpeak }] }],
                     config: {
@@ -1763,18 +1929,34 @@ const ExportDropdown = ({ quizData, onEnterFlashcards, quizOptions, contextText,
                     }
                 });
 
-                const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-                if (base64Audio) {
-                    const binaryString = atob(base64Audio);
-                    const len = binaryString.length;
-                    const bytes = new Uint8Array(len);
-                    for (let j = 0; j < len; j++) {
-                        bytes[j] = binaryString.charCodeAt(j);
+                const questionBase64Audio = questionResponse.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+                if (questionBase64Audio) {
+                    audioBuffers.push(decode(questionBase64Audio));
+                }
+
+                // 2. Add 10s pause for answering
+                audioBuffers.push(answerSilence);
+                
+                // 3. Generate and add Answer Audio
+                const answerTextToSpeak = `The correct answer is: ${q.answer}. Explanation: ${q.explanation}`;
+                const answerResponse = await ai.models.generateContent({
+                    model: "gemini-2.5-flash-preview-tts",
+                    contents: [{ parts: [{ text: answerTextToSpeak }] }],
+                    config: {
+                        responseModalities: [Modality.AUDIO],
+                        speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName } } }
                     }
-                    audioBuffers.push(bytes);
-                    if (i < quizData.length - 1) {
-                         audioBuffers.push(silence);
-                    }
+                });
+
+                const answerBase64Audio = answerResponse.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+                if (answerBase64Audio) {
+                    audioBuffers.push(decode(answerBase64Audio));
+                }
+
+                // 4. Add a short, natural pause before the next question
+                if (i < audioFriendlyQuizData.length - 1) {
+                     const naturalPause = new Uint8Array(24000 * 2 * 2).fill(0); // 2 seconds of silence
+                     audioBuffers.push(naturalPause);
                 }
             }
             
@@ -1843,12 +2025,12 @@ const ExportDropdown = ({ quizData, onEnterFlashcards, quizOptions, contextText,
             <button className="btn">{t('export')} &#9662;</button>
             <div className="dropdown-content">
                 <button onClick={handleSaveToPdf}>{t('saveAsPdf')}</button>
-                <button onClick={() => setModal({ type: 'audio' })}>{t('generateAudio')}</button>
+                <button onClick={handleGenerateAudio}>{t('generateAudio')}</button>
                 <button onClick={handleSaveToCode}>{t('saveToCode')}</button>
                 <button onClick={onEnterFlashcards}>{t('exportToFlashcards')}</button>
+                <button onClick={onEnterConversationMode}>{t('exportToConversational')}</button>
             </div>
         </div>
-        {modal?.type === 'audio' && <AudioModal onClose={() => setModal(null)} onConfirm={handleGenerateAudio} t={t} />}
         {modal?.type === 'code' && (
             <div className="modal-overlay">
                 <div className="modal-content">
@@ -1877,6 +2059,7 @@ const ResultsStep = ({ results, quizData, onRestart, onTryAgain, t }) => {
             if (lastAttempt?.isCorrect) {
                 return score + 1;
             }
+             // For partially correct matching questions, don't add to the main score count, as it's handled separately.
             return score;
         }, 0);
     }
@@ -1920,12 +2103,33 @@ const ResultsStep = ({ results, quizData, onRestart, onTryAgain, t }) => {
                         }
                     }
 
+                    const isMatchingWithScore = q.type === 'matching' && lastAttempt?.scoreDetails;
+
                     return (
                         <div key={index} className="result-question">
                             <p><strong>{index + 1}. {q.question}</strong></p>
-                            <p><span className="attempt-label">{t('yourAnswer')}:</span> <span className={status}>{displayAnswer || 'No answer'}</span></p>
-                            {!lastAttempt?.isCorrect && <p><span className="attempt-label">{t('correctAnswer')}:</span> {q.type === 'matching' ? q.matchPairs.map(p=>`• ${p.term}: ${p.definition}`).join('\n') : q.answer}</p>}
-                            <p><span className="attempt-label">{t(lastAttempt?.isCorrect ? 'explanation' : 'aiFeedback')}:</span> <em>{lastAttempt?.feedback || q.explanation}</em></p>
+                            {isMatchingWithScore ? (
+                                <>
+                                    <p>
+                                        <span className="attempt-label">{t('yourScore')}:</span> 
+                                        <span className={lastAttempt.scoreDetails.score === 5 ? 'correct' : 'partially-correct'}>
+                                            {` ${lastAttempt.scoreDetails.score} / ${lastAttempt.scoreDetails.total} ${t('points')}`}
+                                        </span>
+                                    </p>
+                                    <p><span className="attempt-label">{t('correctPairings')}:</span></p>
+                                    <div style={{ paddingLeft: '1rem', borderLeft: '3px solid var(--border-color)', marginTop: '0.5rem' }}>
+                                        {q.matchPairs.map((pair, i) => (
+                                            <p key={i} style={{ margin: '0.25rem 0' }}>• <strong>{pair.term}:</strong> {pair.definition}</p>
+                                        ))}
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <p><span className="attempt-label">{t('yourAnswer')}:</span> <span className={status}>{displayAnswer || 'No answer'}</span></p>
+                                    {!lastAttempt?.isCorrect && <p><span className="attempt-label">{t('correctAnswer')}:</span> {q.type === 'matching' ? q.matchPairs.map(p=>`• ${p.term}: ${p.definition}`).join('\n') : q.answer}</p>}
+                                    <p><span className="attempt-label">{t(lastAttempt?.isCorrect ? 'explanation' : 'aiFeedback')}:</span> <em>{lastAttempt?.feedback || q.explanation}</em></p>
+                                </>
+                            )}
                         </div>
                     );
                  })}
@@ -1933,6 +2137,415 @@ const ResultsStep = ({ results, quizData, onRestart, onTryAgain, t }) => {
         </div>
     );
 };
+
+// Audio helper functions for encoding/decoding
+function encode(bytes) {
+  let binary = '';
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+function decode(base64) {
+  const binaryString = atob(base64);
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
+}
+async function decodeAudioData(data, ctx, sampleRate, numChannels) {
+  const dataInt16 = new Int16Array(data.buffer);
+  const frameCount = dataInt16.length / numChannels;
+  const buffer = ctx.createBuffer(numChannels, frameCount, sampleRate);
+
+  for (let channel = 0; channel < numChannels; channel++) {
+    const channelData = buffer.getChannelData(channel);
+    for (let i = 0; i < frameCount; i++) {
+      channelData[i] = dataInt16[i * numChannels + channel] / 32768.0;
+    }
+  }
+  return buffer;
+}
+function createBlob(data) {
+  const l = data.length;
+  const int16 = new Int16Array(l);
+  for (let i = 0; i < l; i++) {
+    int16[i] = data[i] * 32768;
+  }
+  return {
+    data: encode(new Uint8Array(int16.buffer)),
+    mimeType: 'audio/pcm;rate=16000',
+  };
+}
+
+const ConversationStep = ({ quizData, onExit, t, language, contextText, showLoader, hideLoader }) => {
+    const [processedQuizData, setProcessedQuizData] = React.useState(null);
+    const [currentQuestionIndex, setCurrentQuestionIndex] = React.useState(0);
+    const [gameState, setGameState] = React.useState('initializing');
+    const [permissionState, setPermissionState] = React.useState('checking');
+    const [transcript, setTranscript] = React.useState([]);
+    const [attempts, setAttempts] = React.useState(0);
+    const transcriptEndRef = React.useRef(null);
+
+    const sessionPromiseRef = React.useRef(null);
+    const inputAudioContextRef = React.useRef(null);
+    const mediaStreamRef = React.useRef(null);
+    const scriptProcessorRef = React.useRef(null);
+    const mediaStreamSourceRef = React.useRef(null);
+
+    const addToTranscript = (speaker, text) => {
+        setTranscript(prev => [...prev, { speaker, text, key: Date.now() + Math.random() }]);
+    };
+    
+    React.useEffect(() => {
+        transcriptEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [transcript]);
+
+    const speakAndThen = React.useCallback(async (text, onEndCallback) => {
+        if (!text) {
+            if (onEndCallback) onEndCallback();
+            return;
+        }
+        setGameState('responding');
+        addToTranscript('ai', text);
+        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+        const languageMap = { en: 'Zephyr', es: 'Puck', fr: 'Charon' };
+        const voiceName = languageMap[language] || 'Zephyr';
+
+        try {
+            const response = await ai.models.generateContent({
+                model: "gemini-2.5-flash-preview-tts",
+                contents: [{ parts: [{ text }] }],
+                config: {
+                    responseModalities: [Modality.AUDIO],
+                    speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName } } }
+                }
+            });
+            const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+            if (base64Audio) {
+                const outputAudioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
+                const decodedBytes = decode(base64Audio);
+                const audioBuffer = await decodeAudioData(decodedBytes, outputAudioContext, 24000, 1);
+                const source = outputAudioContext.createBufferSource();
+                source.buffer = audioBuffer;
+                source.connect(outputAudioContext.destination);
+                source.onended = () => {
+                    outputAudioContext.close();
+                    if (onEndCallback) onEndCallback();
+                };
+                source.start();
+            } else {
+                 if (onEndCallback) onEndCallback();
+            }
+        } catch (error) {
+            console.error("TTS Error:", error);
+            if (onEndCallback) onEndCallback();
+        }
+    }, [language]);
+
+    const stopListening = React.useCallback(() => {
+        if (sessionPromiseRef.current) {
+            sessionPromiseRef.current.then(session => session.close());
+            sessionPromiseRef.current = null;
+        }
+        if (scriptProcessorRef.current) {
+            scriptProcessorRef.current.disconnect();
+            scriptProcessorRef.current = null;
+        }
+        if (mediaStreamSourceRef.current) {
+            mediaStreamSourceRef.current.disconnect();
+            mediaStreamSourceRef.current = null;
+        }
+    }, []);
+
+    const evaluateAnswer = React.useCallback(async (userAnswer) => {
+        const currentQuestion = processedQuizData[currentQuestionIndex];
+        const attemptCount = attempts + 1;
+        setAttempts(attemptCount);
+
+        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+        const schema = {
+            type: Type.OBJECT,
+            properties: {
+                isCorrect: { type: Type.BOOLEAN },
+                feedback: { type: Type.STRING, description: "Feedback for the user. If correct, confirm it. If incorrect, explain why." },
+                hint: { type: Type.STRING, nullable: true, description: "A hint for the user if their first attempt is wrong. Null otherwise." },
+            },
+            required: ['isCorrect', 'feedback']
+        };
+
+        const hintPrompt = attemptCount === 1 ? "If the answer is incorrect, provide a brief hint to guide the user to the correct answer for their next attempt." : "Do not provide a hint.";
+        const prompt = `Evaluate the user's answer to a quiz question. Context: The user is in an audio quiz. Your response will be spoken back to them. Question: "${currentQuestion.question}". Correct Answer: "${currentQuestion.answer}". User's Answer: "${userAnswer}". Evaluation criteria: 1. Determine if the user's answer is correct. Be lenient with phrasing but strict on the core concepts. 2. Provide brief, conversational feedback. 3. ${hintPrompt}. Return a JSON object with the evaluation.`;
+
+        try {
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.5-pro',
+                contents: prompt,
+                config: { responseMimeType: 'application/json', responseSchema: schema }
+            });
+            const result = JSON.parse(response.text);
+
+            if (result.isCorrect) {
+                speakAndThen(result.feedback, () => speakAndThen(currentQuestion.explanation, () => setGameState('next_question')));
+            } else {
+                if (attemptCount < 2) {
+                    const hintText = `That's not quite right. ${result.feedback} Here's a hint: ${result.hint}`;
+                    speakAndThen(hintText, () => setGameState('start_listening'));
+                } else {
+                    const correctionText = `Still not quite there. ${result.feedback} The correct answer is: ${currentQuestion.answer}.`;
+                    speakAndThen(correctionText, () => speakAndThen(currentQuestion.explanation, () => setGameState('next_question')));
+                }
+            }
+        } catch (error) {
+            console.error("Evaluation error:", error);
+            speakAndThen("I had trouble checking your answer. Let's move to the next question.", () => setGameState('next_question'));
+        }
+    }, [processedQuizData, currentQuestionIndex, attempts, speakAndThen]);
+    
+    const startListening = React.useCallback(() => {
+        if (!mediaStreamRef.current || !inputAudioContextRef.current) return;
+        setGameState('listening');
+        let accumulatedTranscript = '';
+        const ai = new GoogleGenAI({apiKey: process.env.API_KEY});
+        const repeatKeywords = ['repeat', 'say that again', 'what was that', 'can you repeat', 'repeat the question'];
+
+        const sessionPromise = ai.live.connect({
+            model: 'gemini-2.5-flash-native-audio-preview-09-2025',
+            config: {
+                inputAudioTranscription: {},
+                responseModalities: [Modality.AUDIO],
+            },
+            callbacks: {
+                onopen: () => {
+                    const source = inputAudioContextRef.current.createMediaStreamSource(mediaStreamRef.current);
+                    const scriptProcessor = inputAudioContextRef.current.createScriptProcessor(4096, 1, 1);
+                    scriptProcessor.onaudioprocess = (audioProcessingEvent) => {
+                        const inputData = audioProcessingEvent.inputBuffer.getChannelData(0);
+                        const pcmBlob = createBlob(inputData);
+                        sessionPromise.then(session => session.sendRealtimeInput({ media: pcmBlob }));
+                    };
+                    source.connect(scriptProcessor);
+                    scriptProcessor.connect(inputAudioContextRef.current.destination);
+                    mediaStreamSourceRef.current = source;
+                    scriptProcessorRef.current = scriptProcessor;
+                },
+                onmessage: (message) => {
+                    if (message.serverContent?.inputTranscription) {
+                        const text = message.serverContent.inputTranscription.text;
+                        accumulatedTranscript += text;
+                        const lowerTranscript = accumulatedTranscript.toLowerCase();
+                        
+                        const saidRepeat = repeatKeywords.some(keyword => lowerTranscript.includes(keyword));
+                        if (saidRepeat) {
+                            stopListening();
+                            setGameState('repeat_question');
+                            return;
+                        }
+
+                        if (lowerTranscript.includes('done')) {
+                            stopListening();
+                            const finalAnswer = lowerTranscript.replace(/\bdone\b/g, '').replace(new RegExp(repeatKeywords.join('|'), 'gi'), '').trim();
+                            if (finalAnswer) {
+                                addToTranscript('user', finalAnswer);
+                                setGameState('evaluating');
+                                evaluateAnswer(finalAnswer);
+                            } else {
+                                setGameState('start_listening');
+                            }
+                        }
+                    }
+                },
+                onerror: (e) => { console.error("Live session error:", e); setGameState('error'); },
+                onclose: () => {},
+            }
+        });
+        sessionPromiseRef.current = sessionPromise;
+    }, [stopListening, evaluateAnswer]);
+
+    React.useEffect(() => {
+        const gameLoop = async () => {
+            if (!processedQuizData) return;
+
+            switch (gameState) {
+                case 'start_question': {
+                    const currentQuestion = processedQuizData[currentQuestionIndex];
+                    if (currentQuestion) {
+                        setAttempts(0);
+                        let questionText = currentQuestion.question;
+                        if (currentQuestion.type === 'multiple-choice') {
+                            const options = currentQuestion.options.map((opt, i) => `${String.fromCharCode(65 + i)}. ${opt}`).join('. ');
+                            questionText += ` Your options are: ${options}`;
+                        }
+                        await speakAndThen(questionText, () => setGameState('start_listening'));
+                    }
+                    break;
+                }
+                case 'repeat_question': {
+                    const currentQuestion = processedQuizData[currentQuestionIndex];
+                     if (currentQuestion) {
+                        let questionText = currentQuestion.question;
+                        if (currentQuestion.type === 'multiple-choice') {
+                            const options = currentQuestion.options.map((opt, i) => `${String.fromCharCode(65 + i)}. ${opt}`).join('. ');
+                            questionText += ` Your options are: ${options}`;
+                        }
+                        await speakAndThen(questionText, () => setGameState('start_listening'));
+                    }
+                    break;
+                }
+                case 'start_listening':
+                    startListening();
+                    break;
+                case 'next_question':
+                    if (currentQuestionIndex < processedQuizData.length - 1) {
+                        setCurrentQuestionIndex(prev => prev + 1);
+                        setGameState('start_question');
+                    } else {
+                        setGameState('complete');
+                        await speakAndThen(t('conversationStatusComplete'), onExit);
+                    }
+                    break;
+                default:
+                    // For other states like 'listening', 'evaluating', 'responding' etc. no action is needed here.
+                    break;
+            }
+        };
+        gameLoop();
+    }, [gameState, currentQuestionIndex, processedQuizData, speakAndThen, startListening, onExit, t]);
+    
+    React.useEffect(() => {
+        async function setup() {
+             if (quizData) {
+                const audioFriendlyData = await regenerateMatchingQuestionsForAudio(quizData, contextText, language, t, showLoader, hideLoader);
+                setProcessedQuizData(audioFriendlyData);
+            }
+        }
+        setup();
+    }, [quizData, contextText, language, t, showLoader, hideLoader]);
+
+    React.useEffect(() => {
+        async function checkPermissions() {
+            if (typeof navigator.permissions?.query !== 'function') {
+                setPermissionState('prompt');
+                return;
+            }
+            try {
+                // Fix: Cast 'microphone' to PermissionName to fix type error.
+                const permissionStatus = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+                setPermissionState(permissionStatus.state);
+                permissionStatus.onchange = () => {
+                    setPermissionState(permissionStatus.state);
+                };
+            } catch (error) {
+                console.error("Could not query microphone permission:", error);
+                setPermissionState('prompt');
+            }
+        }
+        checkPermissions();
+    }, []);
+
+    React.useEffect(() => {
+        if (!processedQuizData || permissionState === 'checking' || permissionState === 'denied') {
+            return;
+        }
+
+        async function setupAudio() {
+            if (permissionState === 'prompt' || permissionState === 'granted') {
+                try {
+                    inputAudioContextRef.current = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+                    if (inputAudioContextRef.current.state === 'suspended') {
+                        await inputAudioContextRef.current.resume();
+                    }
+                    mediaStreamRef.current = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    setGameState('start_question');
+                } catch (err) {
+                    console.error("Mic permission denied or error:", err);
+                    setPermissionState('denied');
+                }
+            }
+        }
+        
+        setupAudio();
+        
+        return () => {
+            stopListening();
+            if (mediaStreamRef.current) {
+                mediaStreamRef.current.getTracks().forEach(track => track.stop());
+            }
+            if (inputAudioContextRef.current && inputAudioContextRef.current.state !== 'closed') {
+                 inputAudioContextRef.current.close();
+            }
+        };
+    }, [processedQuizData, onExit, stopListening, permissionState]);
+
+    const statusMap = {
+        initializing: t('conversationStatusInitializing'),
+        asking: t('conversationStatusAsking'),
+        listening: t('conversationStatusListening'),
+        evaluating: t('conversationStatusEvaluating'),
+        responding: t('conversationStatusResponding'),
+        complete: t('conversationStatusComplete'),
+        error: 'An error occurred.',
+    };
+
+    if (permissionState === 'denied') {
+        return (
+            <div className="conversation-view">
+                <div className="conversation-header">
+                    <button className="btn" onClick={onExit}>&larr; {t('exitConversation')}</button>
+                </div>
+                <div className="permission-denied-container">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="2" y1="2" x2="22" y2="22" strokeWidth="2.5"></line>
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                        <line x1="12" y1="19" x2="12" y2="23"></line>
+                        <line x1="8" y1="23" x2="16" y2="23"></line>
+                    </svg>
+                    <h4>{t('permissionDeniedTitle')}</h4>
+                    <p>{t('permissionDeniedInfo1')}</p>
+                    <p>{t('permissionDeniedInfo2')}</p>
+                    <button className="btn" onClick={() => window.location.reload()}>{t('permissionRefreshButton')}</button>
+                </div>
+            </div>
+        );
+    }
+
+    if (!processedQuizData || permissionState === 'checking') {
+        return (
+             <div className="conversation-view">
+                 <div className="conversation-orb initializing">
+                    <AppLogo />
+                </div>
+                <p className="conversation-status">{!processedQuizData ? t('adaptingForAudio') : t('checkingPermissions')}</p>
+             </div>
+        )
+    }
+
+    return (
+        <div className="conversation-view">
+            <div className="conversation-header">
+                <button className="btn" onClick={onExit}>&larr; {t('exitConversation')}</button>
+                <div className="conversation-progress">{t('question')} {currentQuestionIndex + 1} {t('of')} {processedQuizData.length}</div>
+            </div>
+            <div className={`conversation-orb ${gameState}`}>
+                <AppLogo />
+            </div>
+            <p className="conversation-status">{statusMap[gameState] || '...'}</p>
+            <div className="conversation-transcript">
+                {transcript.map((entry) => (
+                    <div key={entry.key} className={`transcript-entry ${entry.speaker}`}>
+                        <p><strong>{entry.speaker === 'ai' ? 'OmniQuiz' : 'You'}:</strong> {entry.text}</p>
+                    </div>
+                ))}
+                <div ref={transcriptEndRef} />
+            </div>
+        </div>
+    );
+};
+
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
