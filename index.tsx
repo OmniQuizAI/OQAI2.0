@@ -1,8 +1,3 @@
-// At the top of your file
-const API_KEY = "AIzaSyDA2wbc4ZZXDBF3noRh_V19jqTbQXCyU48";
-
-// Usage
-const ai = new GoogleGenAI({ apiKey: API_KEY });
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
