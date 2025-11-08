@@ -1,7 +1,8 @@
 
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { GoogleGenAI, Type, Modality } from "@google/genai";
+import { GoogleGenAI, Type, Modality, LiveServerMessage, Blob as GenAI_Blob } from "@google/genai";
 
 // Fix: Declare global libraries to resolve 'Cannot find name' errors
 declare const pdfjsLib: any;
@@ -142,7 +143,7 @@ const translations = {
         exitConversation: 'Exit Conversation',
         conversationStatusInitializing: 'Initializing audio...',
         conversationStatusAsking: 'OmniQuiz is asking a question...',
-        conversationStatusListening: "Listening... Speak your answer and say 'done' when finished.",
+        conversationStatusListening: "Listening... Speak your answer.",
         conversationStatusEvaluating: "Checking your answer...",
         conversationStatusResponding: 'OmniQuiz is responding...',
         conversationStatusComplete: 'Conversational quiz complete!',
@@ -268,7 +269,7 @@ const translations = {
         exitConversation: 'Salir de Conversación',
         conversationStatusInitializing: 'Iniciando audio...',
         conversationStatusAsking: 'OmniQuiz está haciendo una pregunta...',
-        conversationStatusListening: "Escuchando... Di tu respuesta y luego 'listo' al terminar.",
+        conversationStatusListening: "Escuchando... Di tu respuesta.",
         conversationStatusEvaluating: "Comprobando tu respuesta...",
         conversationStatusResponding: 'OmniQuiz está respondiendo...',
         conversationStatusComplete: '¡Cuestionario conversacional completo!',
@@ -394,7 +395,7 @@ const translations = {
         exitConversation: 'Quitter la Conversation',
         conversationStatusInitializing: 'Initialisation de l\'audio...',
         conversationStatusAsking: 'OmniQuiz pose une question...',
-        conversationStatusListening: "J'écoute... Donnez votre réponse et dites 'terminé' lorsque vous avez fini.",
+        conversationStatusListening: "J'écoute... Donnez votre réponse.",
         conversationStatusEvaluating: 'Vérification de votre réponse...',
         conversationStatusResponding: 'OmniQuiz répond...',
         conversationStatusComplete: 'Quiz conversationnel terminé !',
@@ -775,7 +776,7 @@ interface ErrorBoundaryState {
   error: Error | null;
 }
 class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
-    // Fix: Initialize state using a class property to resolve type errors with `this.state` and `this.props`.
+    // Fix: Replaced constructor with class property for state initialization. This is a more modern approach and resolves errors with `this.state` and `this.props` not being found.
     state: ErrorBoundaryState = { hasError: false, error: null };
 
     static getDerivedStateFromError(error: Error): ErrorBoundaryState {
@@ -2183,237 +2184,28 @@ function createBlob(data) {
 
 const ConversationStep = ({ quizData, onExit, t, language, contextText, showLoader, hideLoader }) => {
     const [processedQuizData, setProcessedQuizData] = React.useState(null);
-    const [currentQuestionIndex, setCurrentQuestionIndex] = React.useState(0);
-    const [gameState, setGameState] = React.useState('initializing');
-    const [permissionState, setPermissionState] = React.useState('checking');
+    const [conversationStatus, setConversationStatus] = React.useState('initializing'); // 'initializing', 'in_progress', 'complete', 'error'
+    const [permissionState, setPermissionState] = React.useState('checking'); // 'checking', 'granted', 'prompt', 'denied'
     const [transcript, setTranscript] = React.useState([]);
-    const [attempts, setAttempts] = React.useState(0);
-    const transcriptEndRef = React.useRef(null);
+    const [isPlayingAudio, setIsPlayingAudio] = React.useState(false);
 
+    const transcriptEndRef = React.useRef(null);
     const sessionPromiseRef = React.useRef(null);
     const inputAudioContextRef = React.useRef(null);
+    const outputAudioContextRef = React.useRef(null);
     const mediaStreamRef = React.useRef(null);
     const scriptProcessorRef = React.useRef(null);
     const mediaStreamSourceRef = React.useRef(null);
+    const audioSourcesRef = React.useRef(new Set());
+    const nextAudioStartTimeRef = React.useRef(0);
 
-    const addToTranscript = (speaker, text) => {
+    const addToTranscript = React.useCallback((speaker, text) => {
         setTranscript(prev => [...prev, { speaker, text, key: Date.now() + Math.random() }]);
-    };
-    
+    }, []);
+
     React.useEffect(() => {
         transcriptEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [transcript]);
-
-    const speakAndThen = React.useCallback(async (text, onEndCallback) => {
-        if (!text) {
-            if (onEndCallback) onEndCallback();
-            return;
-        }
-        setGameState('responding');
-        addToTranscript('ai', text);
-        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-        const languageMap = { en: 'Zephyr', es: 'Puck', fr: 'Charon' };
-        const voiceName = languageMap[language] || 'Zephyr';
-
-        try {
-            const response = await ai.models.generateContent({
-                model: "gemini-2.5-flash-preview-tts",
-                contents: [{ parts: [{ text }] }],
-                config: {
-                    responseModalities: [Modality.AUDIO],
-                    speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName } } }
-                }
-            });
-            const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-            if (base64Audio) {
-                const outputAudioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
-                const decodedBytes = decode(base64Audio);
-                const audioBuffer = await decodeAudioData(decodedBytes, outputAudioContext, 24000, 1);
-                const source = outputAudioContext.createBufferSource();
-                source.buffer = audioBuffer;
-                source.connect(outputAudioContext.destination);
-                source.onended = () => {
-                    outputAudioContext.close();
-                    if (onEndCallback) onEndCallback();
-                };
-                source.start();
-            } else {
-                 if (onEndCallback) onEndCallback();
-            }
-        } catch (error) {
-            console.error("TTS Error:", error);
-            if (onEndCallback) onEndCallback();
-        }
-    }, [language]);
-
-    const stopListening = React.useCallback(() => {
-        if (sessionPromiseRef.current) {
-            sessionPromiseRef.current.then(session => session.close());
-            sessionPromiseRef.current = null;
-        }
-        if (scriptProcessorRef.current) {
-            scriptProcessorRef.current.disconnect();
-            scriptProcessorRef.current = null;
-        }
-        if (mediaStreamSourceRef.current) {
-            mediaStreamSourceRef.current.disconnect();
-            mediaStreamSourceRef.current = null;
-        }
-    }, []);
-
-    const evaluateAnswer = React.useCallback(async (userAnswer) => {
-        const currentQuestion = processedQuizData[currentQuestionIndex];
-        const attemptCount = attempts + 1;
-        setAttempts(attemptCount);
-
-        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-        const schema = {
-            type: Type.OBJECT,
-            properties: {
-                isCorrect: { type: Type.BOOLEAN },
-                feedback: { type: Type.STRING, description: "Feedback for the user. If correct, confirm it. If incorrect, explain why." },
-                hint: { type: Type.STRING, nullable: true, description: "A hint for the user if their first attempt is wrong. Null otherwise." },
-            },
-            required: ['isCorrect', 'feedback']
-        };
-
-        const hintPrompt = attemptCount === 1 ? "If the answer is incorrect, provide a brief hint to guide the user to the correct answer for their next attempt." : "Do not provide a hint.";
-        const prompt = `Evaluate the user's answer to a quiz question. Context: The user is in an audio quiz. Your response will be spoken back to them. Question: "${currentQuestion.question}". Correct Answer: "${currentQuestion.answer}". User's Answer: "${userAnswer}". Evaluation criteria: 1. Determine if the user's answer is correct. Be lenient with phrasing but strict on the core concepts. 2. Provide brief, conversational feedback. 3. ${hintPrompt}. Return a JSON object with the evaluation.`;
-
-        try {
-            const response = await ai.models.generateContent({
-                model: 'gemini-2.5-pro',
-                contents: prompt,
-                config: { responseMimeType: 'application/json', responseSchema: schema }
-            });
-            const result = JSON.parse(response.text);
-
-            if (result.isCorrect) {
-                speakAndThen(result.feedback, () => speakAndThen(currentQuestion.explanation, () => setGameState('next_question')));
-            } else {
-                if (attemptCount < 2) {
-                    const hintText = `That's not quite right. ${result.feedback} Here's a hint: ${result.hint}`;
-                    speakAndThen(hintText, () => setGameState('start_listening'));
-                } else {
-                    const correctionText = `Still not quite there. ${result.feedback} The correct answer is: ${currentQuestion.answer}.`;
-                    speakAndThen(correctionText, () => speakAndThen(currentQuestion.explanation, () => setGameState('next_question')));
-                }
-            }
-        } catch (error) {
-            console.error("Evaluation error:", error);
-            speakAndThen("I had trouble checking your answer. Let's move to the next question.", () => setGameState('next_question'));
-        }
-    }, [processedQuizData, currentQuestionIndex, attempts, speakAndThen]);
-    
-    const startListening = React.useCallback(() => {
-        if (!mediaStreamRef.current || !inputAudioContextRef.current) return;
-        setGameState('listening');
-        let accumulatedTranscript = '';
-        const ai = new GoogleGenAI({apiKey: process.env.API_KEY});
-        const repeatKeywords = ['repeat', 'say that again', 'what was that', 'can you repeat', 'repeat the question'];
-
-        const sessionPromise = ai.live.connect({
-            model: 'gemini-2.5-flash-native-audio-preview-09-2025',
-            config: {
-                inputAudioTranscription: {},
-                responseModalities: [Modality.AUDIO],
-            },
-            callbacks: {
-                onopen: () => {
-                    const source = inputAudioContextRef.current.createMediaStreamSource(mediaStreamRef.current);
-                    const scriptProcessor = inputAudioContextRef.current.createScriptProcessor(4096, 1, 1);
-                    scriptProcessor.onaudioprocess = (audioProcessingEvent) => {
-                        const inputData = audioProcessingEvent.inputBuffer.getChannelData(0);
-                        const pcmBlob = createBlob(inputData);
-                        sessionPromise.then(session => session.sendRealtimeInput({ media: pcmBlob }));
-                    };
-                    source.connect(scriptProcessor);
-                    scriptProcessor.connect(inputAudioContextRef.current.destination);
-                    mediaStreamSourceRef.current = source;
-                    scriptProcessorRef.current = scriptProcessor;
-                },
-                onmessage: (message) => {
-                    if (message.serverContent?.inputTranscription) {
-                        const text = message.serverContent.inputTranscription.text;
-                        accumulatedTranscript += text;
-                        const lowerTranscript = accumulatedTranscript.toLowerCase();
-                        
-                        const saidRepeat = repeatKeywords.some(keyword => lowerTranscript.includes(keyword));
-                        if (saidRepeat) {
-                            stopListening();
-                            setGameState('repeat_question');
-                            return;
-                        }
-
-                        if (lowerTranscript.includes('done')) {
-                            stopListening();
-                            const finalAnswer = lowerTranscript.replace(/\bdone\b/g, '').replace(new RegExp(repeatKeywords.join('|'), 'gi'), '').trim();
-                            if (finalAnswer) {
-                                addToTranscript('user', finalAnswer);
-                                setGameState('evaluating');
-                                evaluateAnswer(finalAnswer);
-                            } else {
-                                setGameState('start_listening');
-                            }
-                        }
-                    }
-                },
-                onerror: (e) => { console.error("Live session error:", e); setGameState('error'); },
-                onclose: () => {},
-            }
-        });
-        sessionPromiseRef.current = sessionPromise;
-    }, [stopListening, evaluateAnswer]);
-
-    React.useEffect(() => {
-        const gameLoop = async () => {
-            if (!processedQuizData) return;
-
-            switch (gameState) {
-                case 'start_question': {
-                    const currentQuestion = processedQuizData[currentQuestionIndex];
-                    if (currentQuestion) {
-                        setAttempts(0);
-                        let questionText = currentQuestion.question;
-                        if (currentQuestion.type === 'multiple-choice') {
-                            const options = currentQuestion.options.map((opt, i) => `${String.fromCharCode(65 + i)}. ${opt}`).join('. ');
-                            questionText += ` Your options are: ${options}`;
-                        }
-                        await speakAndThen(questionText, () => setGameState('start_listening'));
-                    }
-                    break;
-                }
-                case 'repeat_question': {
-                    const currentQuestion = processedQuizData[currentQuestionIndex];
-                     if (currentQuestion) {
-                        let questionText = currentQuestion.question;
-                        if (currentQuestion.type === 'multiple-choice') {
-                            const options = currentQuestion.options.map((opt, i) => `${String.fromCharCode(65 + i)}. ${opt}`).join('. ');
-                            questionText += ` Your options are: ${options}`;
-                        }
-                        await speakAndThen(questionText, () => setGameState('start_listening'));
-                    }
-                    break;
-                }
-                case 'start_listening':
-                    startListening();
-                    break;
-                case 'next_question':
-                    if (currentQuestionIndex < processedQuizData.length - 1) {
-                        setCurrentQuestionIndex(prev => prev + 1);
-                        setGameState('start_question');
-                    } else {
-                        setGameState('complete');
-                        await speakAndThen(t('conversationStatusComplete'), onExit);
-                    }
-                    break;
-                default:
-                    // For other states like 'listening', 'evaluating', 'responding' etc. no action is needed here.
-                    break;
-            }
-        };
-        gameLoop();
-    }, [gameState, currentQuestionIndex, processedQuizData, speakAndThen, startListening, onExit, t]);
     
     React.useEffect(() => {
         async function setup() {
@@ -2447,49 +2239,171 @@ const ConversationStep = ({ quizData, onExit, t, language, contextText, showLoad
     }, []);
 
     React.useEffect(() => {
-        if (!processedQuizData || permissionState === 'checking' || permissionState === 'denied') {
+        if (!processedQuizData || permissionState !== 'granted') {
             return;
         }
 
-        async function setupAudio() {
-            if (permissionState === 'prompt' || permissionState === 'granted') {
-                try {
-                    inputAudioContextRef.current = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
-                    if (inputAudioContextRef.current.state === 'suspended') {
-                        await inputAudioContextRef.current.resume();
+        let currentInputTranscription = '';
+        let currentOutputTranscription = '';
+
+        const languageMap = { en: { voice: 'Zephyr' }, es: { voice: 'Puck' }, fr: { voice: 'Charon' } };
+        const voiceName = languageMap[language]?.voice || 'Zephyr';
+
+        const systemInstruction = `You are a friendly and engaging quiz master named OmniQuiz. Your task is to conduct an audio-based quiz with the user.
+        Instructions:
+        1.  Start by saying "Welcome to your conversational quiz! Let's begin with the first question."
+        2.  Administer the quiz by asking each question from the provided JSON data, one by one.
+        3.  After asking a question (and its options, if any), listen for the user's spoken answer.
+        4.  Evaluate their answer based on the 'answer' field for that question. Be slightly lenient with phrasing but strict on the core concept.
+        5.  If the answer is correct, say something like "That's correct!" and then read the 'explanation'.
+        6.  If the answer is incorrect, gently correct them by saying something like "That's not quite right. The correct answer is [correct answer]." and then read the 'explanation'.
+        7.  Proceed to the next question automatically after the explanation.
+        8.  After the very last question has been answered and explained, conclude the session by saying "${t('conversationStatusComplete')}" and nothing more.
+        9.  Your entire spoken response MUST be in the target language: ${language}.
+        
+        Quiz Data:
+        ${JSON.stringify(processedQuizData)}
+        `;
+
+        async function startConversation() {
+            try {
+                inputAudioContextRef.current = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+                outputAudioContextRef.current = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
+                mediaStreamRef.current = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+                const ai = new GoogleGenAI({apiKey: process.env.API_KEY});
+                const sessionPromise = ai.live.connect({
+                    model: 'gemini-2.5-flash-native-audio-preview-09-2025',
+                    config: {
+                        responseModalities: [Modality.AUDIO],
+                        speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName } } },
+                        systemInstruction: systemInstruction,
+                        inputAudioTranscription: {},
+                        outputAudioTranscription: {}
+                    },
+                    callbacks: {
+                        onopen: () => {
+                            setConversationStatus('in_progress');
+                            const source = inputAudioContextRef.current.createMediaStreamSource(mediaStreamRef.current);
+                            const scriptProcessor = inputAudioContextRef.current.createScriptProcessor(4096, 1, 1);
+                            scriptProcessor.onaudioprocess = (audioProcessingEvent) => {
+                                const inputData = audioProcessingEvent.inputBuffer.getChannelData(0);
+                                const pcmBlob = createBlob(inputData);
+                                sessionPromise.then(session => session.sendRealtimeInput({ media: pcmBlob as GenAI_Blob }));
+                            };
+                            source.connect(scriptProcessor);
+                            scriptProcessor.connect(inputAudioContextRef.current.destination);
+                            mediaStreamSourceRef.current = source;
+                            scriptProcessorRef.current = scriptProcessor;
+                        },
+                        onmessage: async (message: LiveServerMessage) => {
+                            // Handle Audio
+                            const base64Audio = message.serverContent?.modelTurn?.parts[0]?.inlineData?.data;
+                            if (base64Audio && outputAudioContextRef.current) {
+                                setIsPlayingAudio(true);
+                                const outputAudioContext = outputAudioContextRef.current;
+                                nextAudioStartTimeRef.current = Math.max(nextAudioStartTimeRef.current, outputAudioContext.currentTime);
+                                const audioBuffer = await decodeAudioData(decode(base64Audio), outputAudioContext, 24000, 1);
+                                const source = outputAudioContext.createBufferSource();
+                                source.buffer = audioBuffer;
+                                source.connect(outputAudioContext.destination);
+                                source.addEventListener('ended', () => {
+                                    audioSourcesRef.current.delete(source);
+                                    if (audioSourcesRef.current.size === 0) {
+                                        setIsPlayingAudio(false);
+                                    }
+                                });
+                                source.start(nextAudioStartTimeRef.current);
+                                nextAudioStartTimeRef.current += audioBuffer.duration;
+                                audioSourcesRef.current.add(source);
+                            }
+
+                            // Handle Transcription
+                            if (message.serverContent?.outputTranscription) {
+                                currentOutputTranscription += message.serverContent.outputTranscription.text;
+                            }
+                            if (message.serverContent?.inputTranscription) {
+                                currentInputTranscription += message.serverContent.inputTranscription.text;
+                            }
+                            if (message.serverContent?.turnComplete) {
+                                if (currentInputTranscription.trim()) {
+                                    addToTranscript('user', currentInputTranscription.trim());
+                                }
+                                if (currentOutputTranscription.trim()) {
+                                    addToTranscript('ai', currentOutputTranscription.trim());
+                                    if (currentOutputTranscription.includes(t('conversationStatusComplete'))) {
+                                        setConversationStatus('complete');
+                                        setTimeout(onExit, 2000);
+                                    }
+                                }
+                                currentInputTranscription = '';
+                                currentOutputTranscription = '';
+                            }
+                        },
+                        onerror: (e) => {
+                            console.error("Live session error:", e);
+                            setConversationStatus('error');
+                        },
+                        onclose: () => {},
                     }
-                    mediaStreamRef.current = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    setGameState('start_question');
-                } catch (err) {
-                    console.error("Mic permission denied or error:", err);
-                    setPermissionState('denied');
-                }
+                });
+                sessionPromiseRef.current = sessionPromise;
+
+            } catch (err) {
+                 console.error("Mic permission denied or error:", err);
+                 setPermissionState('denied');
             }
         }
-        
-        setupAudio();
-        
+
+        if (permissionState === 'prompt') {
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(() => setPermissionState('granted'))
+                .catch(() => setPermissionState('denied'));
+        } else {
+             startConversation();
+        }
+
         return () => {
-            stopListening();
+            if (sessionPromiseRef.current) {
+                sessionPromiseRef.current.then(session => session.close());
+                sessionPromiseRef.current = null;
+            }
+            if (scriptProcessorRef.current) {
+                scriptProcessorRef.current.disconnect();
+                scriptProcessorRef.current = null;
+            }
+            if (mediaStreamSourceRef.current) {
+                mediaStreamSourceRef.current.disconnect();
+                mediaStreamSourceRef.current = null;
+            }
             if (mediaStreamRef.current) {
                 mediaStreamRef.current.getTracks().forEach(track => track.stop());
+                mediaStreamRef.current = null;
             }
-            if (inputAudioContextRef.current && inputAudioContextRef.current.state !== 'closed') {
-                 inputAudioContextRef.current.close();
+            if (inputAudioContextRef.current) {
+                inputAudioContextRef.current.close();
+                inputAudioContextRef.current = null;
             }
+            if (outputAudioContextRef.current) {
+                outputAudioContextRef.current.close();
+                outputAudioContextRef.current = null;
+            }
+             audioSourcesRef.current.forEach(source => source.stop());
+             audioSourcesRef.current.clear();
         };
-    }, [processedQuizData, onExit, stopListening, permissionState]);
+    }, [processedQuizData, permissionState, language, t, onExit, addToTranscript]);
 
-    const statusMap = {
-        initializing: t('conversationStatusInitializing'),
-        asking: t('conversationStatusAsking'),
-        listening: t('conversationStatusListening'),
-        evaluating: t('conversationStatusEvaluating'),
-        responding: t('conversationStatusResponding'),
-        complete: t('conversationStatusComplete'),
-        error: 'An error occurred.',
+    const getStatusText = () => {
+        switch (conversationStatus) {
+            case 'initializing': return t('conversationStatusInitializing');
+            case 'in_progress':
+                return isPlayingAudio ? t('conversationStatusResponding') : t('conversationStatusListening');
+            case 'complete': return t('conversationStatusComplete');
+            case 'error': return 'An error occurred.';
+            default: return '...';
+        }
     };
-
+    
     if (permissionState === 'denied') {
         return (
             <div className="conversation-view">
@@ -2513,7 +2427,7 @@ const ConversationStep = ({ quizData, onExit, t, language, contextText, showLoad
         );
     }
 
-    if (!processedQuizData || permissionState === 'checking') {
+    if (!processedQuizData || permissionState === 'checking' || permissionState === 'prompt') {
         return (
              <div className="conversation-view">
                  <div className="conversation-orb initializing">
@@ -2528,12 +2442,14 @@ const ConversationStep = ({ quizData, onExit, t, language, contextText, showLoad
         <div className="conversation-view">
             <div className="conversation-header">
                 <button className="btn" onClick={onExit}>&larr; {t('exitConversation')}</button>
-                <div className="conversation-progress">{t('question')} {currentQuestionIndex + 1} {t('of')} {processedQuizData.length}</div>
+                 <div className="conversation-progress">
+                    {processedQuizData.length} {t('question')}s
+                </div>
             </div>
-            <div className={`conversation-orb ${gameState}`}>
+            <div className={`conversation-orb ${isPlayingAudio ? 'responding' : 'listening'}`}>
                 <AppLogo />
             </div>
-            <p className="conversation-status">{statusMap[gameState] || '...'}</p>
+            <p className="conversation-status">{getStatusText()}</p>
             <div className="conversation-transcript">
                 {transcript.map((entry) => (
                     <div key={entry.key} className={`transcript-entry ${entry.speaker}`}>
